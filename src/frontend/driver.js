@@ -78,7 +78,9 @@ const driver = {
   singleConnectionOnly: true,
   supportedCreateDatabase: false,
   supportsNodejsBackup: true,
+  supportsNodejsRestore: true,
   nodejsBackupTool: 'pglite-tools',
+  nodejsRestoreTool: 'pglite-tools',
   isolationLevels: ['READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'],
   defaultIsolationLevel: 'READ COMMITTED',
 

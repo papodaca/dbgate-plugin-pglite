@@ -268,6 +268,29 @@ const driver = {
     }
   },
 
+  async restoreDatabase(connection, settings, runner) {
+    const { inputFile, database } = settings;
+    const sql = fs.readFileSync(inputFile, 'utf8');
+    if (!sql.trim()) {
+      throw new Error('Restore file is empty');
+    }
+
+    runner.info({
+      message: `Restoring ${path.basename(inputFile)} (${sql.length} bytes)`,
+      severity: 'info',
+    });
+    const dbhan = await this.connect({ ...connection, database });
+    try {
+      if (runner?.signal?.aborted) {
+        throw new Error('Restore cancelled');
+      }
+      await dbhan.client.exec(sql);
+      runner.info({ message: 'Restore finished', severity: 'info' });
+    } finally {
+      await this.close(dbhan);
+    }
+  },
+
   async listSchemas(dbhan) {
     const { rows } = await this.query(
       dbhan,
