@@ -26,6 +26,7 @@ const packages = [
   'pglite-pgtap',
   'pglite-pgvector',
   'pglite-postgis',
+  'pglite-tools',
 ];
 
 for (const name of packages) {

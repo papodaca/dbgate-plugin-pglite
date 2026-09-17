@@ -1,10 +1,11 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const stream = require('stream');
 const { createBulkInsertStreamBase } = require('dbgate-tools');
 const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
-const { stripDataDirFile } = require('../shared/dataDir');
+const { getDatabaseFileLabel, stripDataDirFile } = require('../shared/dataDir');
 const { selectedExtensions } = require('../shared/extensions');
 const { loadExtensionMap } = require('./loadExtensions');
 
@@ -42,6 +43,52 @@ function columnsFromFields(fields) {
   }));
 }
 
+function ensureFileCtor() {
+  if (typeof File !== 'undefined') return;
+  const { Blob } = require('buffer');
+  globalThis.File = class File extends Blob {
+    constructor(bits, name, options = {}) {
+      super(bits, options);
+      this.name = name;
+      this.lastModified = options.lastModified || Date.now();
+    }
+  };
+}
+
+function pgDumpArgs(settings) {
+  const { selectedTables = [], skippedTables = [], options = {} } = settings;
+  if (options.dataOnly && options.schemaOnly) {
+    throw new Error('Data-only and schema-only backup options cannot be enabled together');
+  }
+
+  const args = [];
+  if (options.dataOnly) args.push('--data-only');
+  if (options.schemaOnly) args.push('--schema-only');
+  if (options.noPrivileges) args.push('--no-privileges');
+  if (options.noOwner) args.push('--no-owner');
+  if (skippedTables.length > 0) {
+    for (const table of selectedTables) {
+      const ident = table.schemaName ? `${table.schemaName}.${table.pureName}` : table.pureName;
+      args.push(`--table=${ident}`);
+    }
+  }
+  return args;
+}
+
+function copyDataDirSnapshot(dataDir) {
+  const dest = fs.mkdtempSync(path.join(os.tmpdir(), 'pglite-dump-'));
+  fs.cpSync(dataDir, dest, { recursive: true });
+  return dest;
+}
+
+function pgliteDatabaseName(connection) {
+  const name = connection.database;
+  if (!name || name === 'memory') return undefined;
+  const label = getDatabaseFileLabel(connection.databaseFile);
+  if (label && name === label) return undefined;
+  return name;
+}
+
 /** @type {import('dbgate-types').EngineDriver} */
 const driver = {
   ...driverBase,
@@ -56,6 +103,10 @@ const driver = {
     };
     if (selected.some(ext => ext.id === 'icu')) {
       options.icuDataDir = await require('@electric-sql/pglite-icu-full').icuDataDir();
+    }
+    const database = pgliteDatabaseName(connection);
+    if (database) {
+      options.database = database;
     }
 
     try {
@@ -173,6 +224,48 @@ const driver = {
        ORDER BY datname`
     );
     return rows;
+  },
+
+  async backupDatabase(connection, settings, runner) {
+    const { outputFile } = settings;
+    const args = pgDumpArgs(settings);
+    ensureFileCtor();
+
+    const dataDir = resolveDataDir(connection.databaseFile);
+    let dbhan;
+    let snapshotDir;
+    try {
+      try {
+        dbhan = await this.connect(connection);
+      } catch (error) {
+        if (!dataDir) throw error;
+        runner.info({
+          message: `Could not open data directory while it is in use, dumping a filesystem snapshot (${error.message})`,
+          severity: 'info',
+        });
+        snapshotDir = copyDataDirSnapshot(dataDir);
+        dbhan = await this.connect({ ...connection, databaseFile: snapshotDir });
+      }
+
+      runner.info({ message: 'Dumping PGlite database with pg_dump', severity: 'info' });
+      const { pgDump } = require('@electric-sql/pglite-tools/pg_dump');
+      const dump = await pgDump({
+        pg: dbhan.client,
+        args,
+        fileName: path.basename(outputFile) || 'dump.sql',
+      });
+      const content = await dump.text();
+      fs.writeFileSync(outputFile, content);
+      runner.info({
+        message: `Wrote ${content.length} bytes to ${path.basename(outputFile)}`,
+        severity: 'info',
+      });
+    } finally {
+      if (dbhan) await this.close(dbhan);
+      if (snapshotDir) {
+        fs.rmSync(snapshotDir, { recursive: true, force: true });
+      }
+    }
   },
 
   async listSchemas(dbhan) {

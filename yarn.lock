@@ -57,6 +57,11 @@
   resolved "https://registry.yarnpkg.com/@electric-sql/pglite-postgis/-/pglite-postgis-0.2.8.tgz#0f41fafcdcd3b739e595ca7eb5ef8b5f1260446c"
   integrity sha512-B7XVSVuj+9TEVfIgPSlbWbhKvROENHTp0Ex6A44kTeTqy4FAm31uGsi7fxx7gqN0Mdo5qH1xv5Fu42dHwKZpqg==
 
+"@electric-sql/pglite-tools@^0.4.8":
+  version "0.4.8"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-tools/-/pglite-tools-0.4.8.tgz#1f38806608451313273991f1209a15d786f11565"
+  integrity sha512-WjgS8US6xfuE0wLYn5m9WrZ/+8dQWoQuQSRkpe7eYcxxx1UjZjvq30rpYSHfGrGtTke/zNiCd9ijVGeRUD8ukg==
+
 "@electric-sql/pglite@0.5.8":
   version "0.5.8"
   resolved "https://registry.yarnpkg.com/@electric-sql/pglite/-/pglite-0.5.8.tgz#9b5b4a61a14d6cf96b3b4e2ea7f124f8d6fe68b3"

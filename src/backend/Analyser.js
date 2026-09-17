@@ -2,6 +2,45 @@ const { DatabaseAnalyser } = require('dbgate-tools');
 
 const SKIP_SCHEMAS = `('pg_catalog', 'information_schema', 'pg_toast')`;
 
+function splitVector(value) {
+  if (value == null || value === '') return [];
+  if (Array.isArray(value)) return value.map(v => String(v));
+  return String(value).trim().split(/\s+/).filter(Boolean);
+}
+
+function groupBy(rows, keyFn) {
+  const map = new Map();
+  for (const row of rows || []) {
+    const key = keyFn(row);
+    let list = map.get(key);
+    if (!list) {
+      list = [];
+      map.set(key, list);
+    }
+    list.push(row);
+  }
+  return map;
+}
+
+function tableKey(schemaName, pureName) {
+  return `${schemaName}.${pureName}`;
+}
+
+function indexColumns(idx, indexcolsByOidAttnum, withDescending) {
+  const options = splitVector(idx.indoption);
+  return splitVector(idx.indkey)
+    .map((colid, colIndex) => {
+      const col = indexcolsByOidAttnum.get(`${idx.oid}_${colid}`);
+      if (!col) return null;
+      const column = { columnName: col.columnName };
+      if (withDescending) {
+        column.isDescending = parseInt(options[colIndex], 10) > 0;
+      }
+      return column;
+    })
+    .filter(Boolean);
+}
+
 class Analyser extends DatabaseAnalyser {
   constructor(dbhan, driver, version) {
     super(dbhan, driver, version);
@@ -51,21 +90,104 @@ class Analyser extends DatabaseAnalyser {
 
     this.feedback({ analysingMessage: 'Loading keys' });
 
-    const pkResult = await this.driver.query(
-      this.dbhan,
-      `SELECT
-         tc.table_schema AS "schemaName",
-         tc.table_name AS "pureName",
-         kcu.column_name AS "columnName",
-         kcu.ordinal_position AS "ordinalPosition"
-       FROM information_schema.table_constraints tc
-       JOIN information_schema.key_column_usage kcu
-         ON tc.constraint_name = kcu.constraint_name
-        AND tc.table_schema = kcu.table_schema
-       WHERE tc.constraint_type = 'PRIMARY KEY'
-         AND tc.table_schema NOT IN ${SKIP_SCHEMAS}
-       ORDER BY tc.table_schema, tc.table_name, kcu.ordinal_position`
-    );
+    const [pkResult, fkResult, uniqueResult, indexesResult, indexcolsResult] = await Promise.all([
+      this.driver.query(
+        this.dbhan,
+        `SELECT
+           n.nspname AS "schemaName",
+           t.relname AS "pureName",
+           c.conname AS "constraintName",
+           a.attname AS "columnName"
+         FROM pg_catalog.pg_constraint c
+         JOIN pg_catalog.pg_class t ON t.oid = c.conrelid
+         JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace
+         JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS cols(attnum, ordinal_position) ON TRUE
+         JOIN pg_catalog.pg_attribute a ON a.attrelid = t.oid AND a.attnum = cols.attnum
+         WHERE c.contype = 'p'
+           AND n.nspname NOT IN ${SKIP_SCHEMAS}
+         ORDER BY n.nspname, t.relname, cols.ordinal_position`
+      ),
+      this.driver.query(
+        this.dbhan,
+        `SELECT
+           nsp.nspname AS "schemaName",
+           rel.relname AS "pureName",
+           con.conname AS "constraintName",
+           nsp2.nspname AS "refSchemaName",
+           rel2.relname AS "refTableName",
+           att.attname AS "columnName",
+           att2.attname AS "refColumnName",
+           CASE con.confupdtype
+             WHEN 'a' THEN 'NO ACTION'
+             WHEN 'r' THEN 'RESTRICT'
+             WHEN 'c' THEN 'CASCADE'
+             WHEN 'n' THEN 'SET NULL'
+             WHEN 'd' THEN 'SET DEFAULT'
+             ELSE con.confupdtype::text
+           END AS "updateAction",
+           CASE con.confdeltype
+             WHEN 'a' THEN 'NO ACTION'
+             WHEN 'r' THEN 'RESTRICT'
+             WHEN 'c' THEN 'CASCADE'
+             WHEN 'n' THEN 'SET NULL'
+             WHEN 'd' THEN 'SET DEFAULT'
+             ELSE con.confdeltype::text
+           END AS "deleteAction"
+         FROM pg_constraint con
+         JOIN pg_class rel ON rel.oid = con.conrelid
+         JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+         JOIN pg_class rel2 ON rel2.oid = con.confrelid
+         JOIN pg_namespace nsp2 ON nsp2.oid = rel2.relnamespace
+         JOIN LATERAL unnest(con.conkey, con.confkey) WITH ORDINALITY AS cols(attnum, ref_attnum, ordinal_position) ON TRUE
+         JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = cols.attnum
+         JOIN pg_attribute att2 ON att2.attrelid = con.confrelid AND att2.attnum = cols.ref_attnum
+         WHERE con.contype = 'f'
+           AND nsp.nspname NOT IN ${SKIP_SCHEMAS}
+         ORDER BY con.conname, cols.ordinal_position`
+      ),
+      this.driver.query(
+        this.dbhan,
+        `SELECT cnt.conname AS "constraintName"
+         FROM pg_constraint cnt
+         JOIN pg_namespace n ON n.oid = cnt.connamespace
+         WHERE cnt.contype = 'u'
+           AND n.nspname NOT IN ${SKIP_SCHEMAS}`
+      ),
+      this.driver.query(
+        this.dbhan,
+        `SELECT
+           t.relname AS "pureName",
+           c.nspname AS "schemaName",
+           i.relname AS "indexName",
+           ix.indisunique AS "isUnique",
+           ix.indkey AS "indkey",
+           ix.indoption AS "indoption",
+           t.oid AS "oid"
+         FROM pg_class t
+         JOIN pg_index ix ON t.oid = ix.indrelid
+         JOIN pg_class i ON i.oid = ix.indexrelid
+         JOIN pg_namespace c ON t.relnamespace = c.oid
+         WHERE t.relkind = 'r'
+           AND ix.indisprimary = false
+           AND c.nspname NOT IN ${SKIP_SCHEMAS}
+         ORDER BY t.relname, i.relname`
+      ),
+      this.driver.query(
+        this.dbhan,
+        `SELECT
+           a.attname AS "columnName",
+           a.attnum AS "attnum",
+           a.attrelid AS "oid"
+         FROM pg_class t
+         JOIN pg_index ix ON t.oid = ix.indrelid
+         JOIN pg_class i ON i.oid = ix.indexrelid
+         JOIN pg_namespace c ON t.relnamespace = c.oid
+         JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = ANY (ix.indkey)
+         WHERE t.relkind = 'r'
+           AND ix.indisprimary = false
+           AND c.nspname NOT IN ${SKIP_SCHEMAS}`
+      ),
+    ]);
 
     this.feedback({ analysingMessage: null });
 
@@ -73,34 +195,44 @@ class Analyser extends DatabaseAnalyser {
       ...row,
       notNull: row.isNullable === 'NO',
     }));
+    const columnsByTable = groupBy(columns, col => tableKey(col.schemaName, col.pureName));
+    const uniqueNameSet = new Set((uniqueResult.rows || []).map(row => row.constraintName));
+    const indexesByTable = groupBy(indexesResult.rows || [], idx => tableKey(idx.schemaName, idx.pureName));
+    const indexcolsByOidAttnum = new Map(
+      (indexcolsResult.rows || []).map(col => [`${col.oid}_${col.attnum}`, col])
+    );
 
-    const primaryKeysByTable = new Map();
-    for (const row of pkResult.rows || []) {
-      const key = `${row.schemaName}.${row.pureName}`;
-      if (!primaryKeysByTable.has(key)) {
-        primaryKeysByTable.set(key, {
-          constraintName: `PK_${row.pureName}`,
-          schemaName: row.schemaName,
-          pureName: row.pureName,
-          columns: [],
-        });
-      }
-      primaryKeysByTable.get(key).columns.push({ columnName: row.columnName });
-    }
-
-    const tables = (tablesResult.rows || []).map(table => ({
-      objectId: `${table.schemaName}.${table.pureName}`,
-      schemaName: table.schemaName,
-      pureName: table.pureName,
-      columns: columns.filter(col => col.pureName == table.pureName && col.schemaName == table.schemaName),
-      primaryKey: primaryKeysByTable.get(`${table.schemaName}.${table.pureName}`) || undefined,
-    }));
+    const tables = (tablesResult.rows || []).map(table => {
+      const key = tableKey(table.schemaName, table.pureName);
+      const tableIndexes = indexesByTable.get(key) || [];
+      return {
+        objectId: key,
+        schemaName: table.schemaName,
+        pureName: table.pureName,
+        columns: columnsByTable.get(key) || [],
+        primaryKey: DatabaseAnalyser.extractPrimaryKeys(table, pkResult.rows || []),
+        foreignKeys: DatabaseAnalyser.extractForeignKeys(table, fkResult.rows || []),
+        indexes: tableIndexes
+          .filter(idx => !uniqueNameSet.has(idx.indexName))
+          .map(idx => ({
+            constraintName: idx.indexName,
+            isUnique: !!idx.isUnique,
+            columns: indexColumns(idx, indexcolsByOidAttnum, true),
+          })),
+        uniques: tableIndexes
+          .filter(idx => uniqueNameSet.has(idx.indexName))
+          .map(idx => ({
+            constraintName: idx.indexName,
+            columns: indexColumns(idx, indexcolsByOidAttnum, false),
+          })),
+      };
+    });
 
     const views = (viewsResult.rows || []).map(view => ({
-      objectId: `${view.schemaName}.${view.pureName}`,
+      objectId: tableKey(view.schemaName, view.pureName),
       schemaName: view.schemaName,
       pureName: view.pureName,
-      columns: columns.filter(col => col.pureName == view.pureName && col.schemaName == view.schemaName),
+      columns: columnsByTable.get(tableKey(view.schemaName, view.pureName)) || [],
     }));
 
     const schemaNames = new Set();

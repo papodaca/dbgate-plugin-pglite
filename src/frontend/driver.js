@@ -1,7 +1,7 @@
 const { driverBase } = (global.DBGATE_PACKAGES && global.DBGATE_PACKAGES['dbgate-tools']) || require('dbgate-tools');
 const Dumper = require('./Dumper');
 const { postgreSplitterOptions, noSplitSplitterOptions } = require('dbgate-query-splitter/lib/options');
-const { getDatabaseFileLabel, stripDataDirFile } = require('../shared/dataDir');
+const { getDatabaseFileLabel, isMemoryDataDir, stripDataDirFile } = require('../shared/dataDir');
 const { EXTENSIONS, extensionFieldName, extensionFieldValues } = require('../shared/extensions');
 const pgliteIcon = require('./icon');
 
@@ -76,6 +76,9 @@ const driver = {
   readOnlySessions: false,
   supportsTransactions: true,
   singleConnectionOnly: true,
+  supportedCreateDatabase: false,
+  supportsNodejsBackup: true,
+  nodejsBackupTool: 'pglite-tools',
   isolationLevels: ['READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'],
   defaultIsolationLevel: 'READ COMMITTED',
 
@@ -97,13 +100,46 @@ const driver = {
     })),
   beforeConnectionSave: connection => {
     const databaseFile = stripDataDirFile(connection.databaseFile);
+    const isMemory = isMemoryDataDir(databaseFile);
     return {
       ...connection,
       ...extensionFieldValues(connection),
       databaseFile,
-      singleDatabase: true,
-      defaultDatabase: getDatabaseFileLabel(databaseFile),
+      singleDatabase: isMemory,
+      defaultDatabase: isMemory ? getDatabaseFileLabel(databaseFile) : 'postgres',
     };
+  },
+
+  getNativeOperationFormArgs(operation) {
+    if (operation != 'backup') return null;
+    return [
+      {
+        type: 'checkbox',
+        label: 'Dump only data (without structure)',
+        name: 'dataOnly',
+        default: false,
+        disabledFn: values => values.schemaOnly,
+      },
+      {
+        type: 'checkbox',
+        label: 'Dump schema only (no data)',
+        name: 'schemaOnly',
+        default: false,
+        disabledFn: values => values.dataOnly,
+      },
+      {
+        type: 'checkbox',
+        label: 'Do not output commands to set ownership of objects',
+        name: 'noOwner',
+        default: true,
+      },
+      {
+        type: 'checkbox',
+        label: 'Prevent dumping of access privileges (grant/revoke)',
+        name: 'noPrivileges',
+        default: true,
+      },
+    ];
   },
 
   getNewObjectTemplates() {

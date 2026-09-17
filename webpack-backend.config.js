@@ -27,6 +27,10 @@ var config = {
       if (request === '@electric-sql/pglite/live') {
         return callback(null, 'commonjs ./vendor/pglite/dist/live/index.cjs');
       }
+      // Subpath must win over the generic pglite-* prefix.
+      if (request === '@electric-sql/pglite-tools/pg_dump') {
+        return callback(null, 'commonjs ./vendor/pglite-tools/dist/pg_dump.cjs');
+      }
       if (request.startsWith('@electric-sql/pglite-')) {
         return callback(null, 'commonjs ./vendor/' + request.slice('@electric-sql/'.length));
       }

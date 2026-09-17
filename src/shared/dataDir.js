@@ -19,8 +19,13 @@ function getDatabaseFileLabel(databaseFile) {
   return normalized;
 }
 
+function isMemoryDataDir(databaseFile) {
+  return !databaseFile || databaseFile === 'memory' || databaseFile === 'memory://';
+}
+
 module.exports = {
   DATA_DIR_FILES,
   stripDataDirFile,
   getDatabaseFileLabel,
+  isMemoryDataDir,
 };
