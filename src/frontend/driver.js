@@ -3,6 +3,7 @@ const Dumper = require('./Dumper');
 const { postgreSplitterOptions, noSplitSplitterOptions } = require('dbgate-query-splitter/lib/options');
 const { getDatabaseFileLabel, stripDataDirFile } = require('../shared/dataDir');
 const { EXTENSIONS, extensionFieldName, extensionFieldValues } = require('../shared/extensions');
+const pgliteIcon = require('./icon');
 
 /** @type {import('dbgate-types').SqlDialect} */
 const dialect = {
@@ -71,6 +72,7 @@ const driver = {
   dialect,
   engine: 'pglite@dbgate-plugin-pglite',
   title: 'PGlite',
+  icon: pgliteIcon,
   readOnlySessions: false,
   supportsTransactions: true,
   singleConnectionOnly: true,

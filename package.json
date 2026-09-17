@@ -3,7 +3,7 @@
   "main": "dist/backend.js",
   "version": "0.1.0",
   "license": "MIT",
-  "description": "PGlite connector plugin for DbGate ![pglite icon](https://raw.githubusercontent.com/electric-sql/pglite/refs/heads/main/docs/public/img/brand/icon-light.svg)",
+  "description": "PGlite connector plugin for DbGate ![icon](https://raw.githubusercontent.com/papodaca/dbgate-plugin-pglite/main/icon.svg)",
   "keywords": [
     "dbgate",
     "dbgateplugin",
