@@ -1,19 +1,30 @@
 {
   "name": "dbgate-plugin-pglite",
-  "main": "dist/backend.js",
-  "version": "0.1.0",
-  "license": "MIT",
+  "version": "1.0.0",
   "description": "PGlite connector plugin for DbGate ![icon](https://raw.githubusercontent.com/papodaca/dbgate-plugin-pglite/main/icon.svg)",
   "keywords": [
     "dbgate",
     "dbgateplugin",
     "pglite",
     "postgres",
-    "postgresql"
+    "postgresql",
+    "wasm"
   ],
+  "homepage": "https://github.com/papodaca/dbgate-plugin-pglite",
+  "bugs": {
+    "url": "https://github.com/papodaca/dbgate-plugin-pglite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/papodaca/dbgate-plugin-pglite.git"
+  },
+  "license": "MIT",
+  "author": "Ethan Apodaca",
+  "main": "dist/backend.js",
   "files": [
     "dist",
-    "icon.svg"
+    "icon.svg",
+    "LICENSE"
   ],
   "scripts": {
     "build:frontend": "webpack --config webpack-frontend.config.js",
