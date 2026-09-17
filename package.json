@@ -1,0 +1,39 @@
+{
+  "name": "dbgate-plugin-pglite",
+  "main": "dist/backend.js",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "PGlite connector plugin for DbGate",
+  "keywords": [
+    "dbgate",
+    "dbgateplugin",
+    "pglite",
+    "postgres",
+    "postgresql"
+  ],
+  "files": [
+    "dist",
+    "icon.svg"
+  ],
+  "scripts": {
+    "build:frontend": "webpack --config webpack-frontend.config.js",
+    "build:frontend:watch": "webpack --watch --config webpack-frontend.config.js",
+    "build:backend": "webpack --config webpack-backend.config.js",
+    "build": "yarn build:frontend && yarn build:backend && node scripts/copy-pglite.js",
+    "plugin": "yarn build && yarn pack && dbgate-plugin dbgate-plugin-pglite",
+    "plugout": "dbgate-plugout dbgate-plugin-pglite",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-pg_textsearch": "0.0.10",
+    "@electric-sql/pglite-pgvector": "0.0.9",
+    "dbgate-query-splitter": "^4.12.0",
+    "dbgate-tools": "^6.5.0"
+  },
+  "devDependencies": {
+    "dbgate-plugin-tools": "^1.0.8",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
