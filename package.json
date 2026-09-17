@@ -1,6 +1,6 @@
 {
   "name": "dbgate-plugin-pglite",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PGlite connector plugin for DbGate ![icon](https://raw.githubusercontent.com/papodaca/dbgate-plugin-pglite/main/icon.svg)",
   "keywords": [
     "dbgate",

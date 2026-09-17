@@ -10,7 +10,7 @@ Browse is a file picker. Pick something inside the data directory (`PG_VERSION`,
 
 Empty path or `memory://` is an in-memory database. Memory connections stay single-database. File-backed connections list `postgres` under the connection, like a normal Postgres server.
 
-Extensions are checkboxes on the Advanced tab. Only checked ones load.
+Extensions are checkboxes on the Advanced tab. Existing data directories also load whatever is already in `shared_preload_libraries`.
 
 Right-click `postgres` for backup (wasm `pg_dump`, INSERT SQL) and restore (`exec` of that SQL). Restore fails if the dump's objects already exist.
 

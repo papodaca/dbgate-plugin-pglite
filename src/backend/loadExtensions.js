@@ -1,3 +1,60 @@
+const fs = require('fs');
+const path = require('path');
+const { EXTENSIONS, selectedExtensions } = require('../shared/extensions');
+
+function sharedPreloadLibraries(dataDir) {
+  if (!dataDir) return [];
+  let text;
+  try {
+    text = fs.readFileSync(path.join(dataDir, 'postgresql.conf'), 'utf8');
+  } catch {
+    return [];
+  }
+
+  const names = [];
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/#.*$/, '').trim();
+    const m = line.match(/^shared_preload_libraries\s*=\s*(.*)$/i);
+    if (!m) continue;
+    let value = m[1].trim();
+    if (
+      (value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith('"') && value.endsWith('"'))
+    ) {
+      value = value.slice(1, -1);
+    }
+    for (const part of value.split(',')) {
+      const name = part.trim();
+      if (name) names.push(name);
+    }
+  }
+  return names;
+}
+
+function extensionByPreloadName(name) {
+  return EXTENSIONS.find(ext => ext.id === name || ext.sqlName === name) || null;
+}
+
+function extensionsForOpen(connection, dataDir) {
+  const selected = selectedExtensions(connection);
+  const needed = new Map(selected.map(ext => [ext.id, ext]));
+  const unknown = [];
+  for (const name of sharedPreloadLibraries(dataDir)) {
+    const ext = extensionByPreloadName(name);
+    if (!ext) {
+      unknown.push(name);
+      continue;
+    }
+    needed.set(ext.id, ext);
+  }
+  if (unknown.length) {
+    throw new Error(
+      `This data directory preloads ${unknown.join(', ')}, which this plugin does not ship`
+    );
+  }
+  return [...needed.values()];
+}
+
 function loadExtensionModule(id) {
   switch (id) {
     case 'vector':
@@ -103,6 +160,8 @@ function loadExtensionMap(selected) {
 }
 
 module.exports = {
+  sharedPreloadLibraries,
+  extensionsForOpen,
   loadExtensionModule,
   loadExtensionMap,
 };

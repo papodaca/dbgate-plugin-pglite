@@ -6,8 +6,7 @@ const { createBulkInsertStreamBase } = require('dbgate-tools');
 const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
 const { getDatabaseFileLabel, stripDataDirFile } = require('../shared/dataDir');
-const { selectedExtensions } = require('../shared/extensions');
-const { loadExtensionMap } = require('./loadExtensions');
+const { extensionsForOpen, loadExtensionMap } = require('./loadExtensions');
 
 function isPostgresDataDir(dir) {
   return fs.existsSync(path.join(dir, 'PG_VERSION')) && fs.existsSync(path.join(dir, 'base'));
@@ -97,19 +96,18 @@ const driver = {
   async connect(connection) {
     const { PGlite } = require('@electric-sql/pglite');
     const dataDir = resolveDataDir(connection.databaseFile);
-    const selected = selectedExtensions(connection);
-    const options = {
-      extensions: loadExtensionMap(selected),
-    };
-    if (selected.some(ext => ext.id === 'icu')) {
-      options.icuDataDir = await require('@electric-sql/pglite-icu-full').icuDataDir();
-    }
-    const database = pgliteDatabaseName(connection);
-    if (database) {
-      options.database = database;
-    }
+    const options = {};
 
     try {
+      const selected = extensionsForOpen(connection, dataDir);
+      options.extensions = loadExtensionMap(selected);
+      if (selected.some(ext => ext.id === 'icu')) {
+        options.icuDataDir = await require('@electric-sql/pglite-icu-full').icuDataDir();
+      }
+      const database = pgliteDatabaseName(connection);
+      if (database) {
+        options.database = database;
+      }
       const client = dataDir ? await PGlite.create(dataDir, options) : await PGlite.create(options);
       for (const ext of selected) {
         if (!ext.sqlName) continue;
