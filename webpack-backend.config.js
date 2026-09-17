@@ -17,6 +17,23 @@ var config = {
   externals: [
     function ({ request }, callback) {
       if (!request) return callback();
+      if (request === 'pglite-pg17') {
+        return callback(null, 'commonjs ./vendor/pglite-pg17');
+      }
+      if (request.startsWith('pglite-pg17/contrib/')) {
+        const name = request.slice('pglite-pg17/contrib/'.length);
+        return callback(null, `commonjs ./vendor/pglite-pg17/dist/contrib/${name}.cjs`);
+      }
+      if (request.startsWith('pglite-pg17/')) {
+        const name = request.slice('pglite-pg17/'.length);
+        return callback(null, `commonjs ./vendor/pglite-pg17/dist/${name}/index.cjs`);
+      }
+      if (request === 'pglite-tools-pg17/pg_dump') {
+        return callback(null, 'commonjs ./vendor/pglite-tools-pg17/dist/pg_dump.cjs');
+      }
+      if (request === 'pglite-postgis-pg17') {
+        return callback(null, 'commonjs ./vendor/pglite-postgis-pg17');
+      }
       if (request === '@electric-sql/pglite') {
         return callback(null, 'commonjs ./vendor/pglite');
       }

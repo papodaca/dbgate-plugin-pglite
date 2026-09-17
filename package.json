@@ -1,6 +1,6 @@
 {
   "name": "dbgate-plugin-pglite",
-  "version": "1.0.1",
+  "version": "1.5.0",
   "description": "PGlite connector plugin for DbGate ![icon](https://raw.githubusercontent.com/papodaca/dbgate-plugin-pglite/main/icon.svg)",
   "keywords": [
     "dbgate",
@@ -48,6 +48,9 @@
     "@electric-sql/pglite-pgvector": "0.0.9",
     "@electric-sql/pglite-postgis": "^0.2.8",
     "@electric-sql/pglite-tools": "^0.4.8",
+    "pglite-pg17": "npm:@electric-sql/pglite@0.4.6",
+    "pglite-postgis-pg17": "npm:@electric-sql/pglite-postgis@0.0.8",
+    "pglite-tools-pg17": "npm:@electric-sql/pglite-tools@0.3.6",
     "dbgate-query-splitter": "^4.12.0",
     "dbgate-tools": "^6.5.0"
   },

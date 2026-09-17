@@ -6,6 +6,7 @@ const { createBulkInsertStreamBase } = require('dbgate-tools');
 const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
 const { getDatabaseFileLabel, stripDataDirFile } = require('../shared/dataDir');
+const { detectMajor, engineFor } = require('./engines');
 const { extensionsForOpen, loadExtensionMap } = require('./loadExtensions');
 
 function isPostgresDataDir(dir) {
@@ -94,15 +95,16 @@ const driver = {
   analyserClass: Analyser,
 
   async connect(connection) {
-    const { PGlite } = require('@electric-sql/pglite');
     const dataDir = resolveDataDir(connection.databaseFile);
+    const engine = engineFor(detectMajor(dataDir));
+    const PGlite = engine.loadPGlite();
     const options = {};
 
     try {
-      const selected = extensionsForOpen(connection, dataDir);
-      options.extensions = loadExtensionMap(selected);
+      const selected = extensionsForOpen(connection, dataDir, engine);
+      options.extensions = loadExtensionMap(selected, engine);
       if (selected.some(ext => ext.id === 'icu')) {
-        options.icuDataDir = await require('@electric-sql/pglite-icu-full').icuDataDir();
+        options.icuDataDir = await engine.loadIcuDataDir();
       }
       const database = pgliteDatabaseName(connection);
       if (database) {
@@ -113,7 +115,7 @@ const driver = {
         if (!ext.sqlName) continue;
         await client.exec(`CREATE EXTENSION IF NOT EXISTS "${ext.sqlName}"`);
       }
-      return { client };
+      return { client, engine };
     } catch (error) {
       const hint = dataDir ? ` (${dataDir})` : '';
       throw new Error(`PGlite failed to open${hint}: ${error.message}`);
@@ -246,7 +248,7 @@ const driver = {
       }
 
       runner.info({ message: 'Dumping PGlite database with pg_dump', severity: 'info' });
-      const { pgDump } = require('@electric-sql/pglite-tools/pg_dump');
+      const pgDump = dbhan.engine.loadPgDump();
       const dump = await pgDump({
         pg: dbhan.client,
         args,

@@ -2,7 +2,13 @@ const { driverBase } = (global.DBGATE_PACKAGES && global.DBGATE_PACKAGES['dbgate
 const Dumper = require('./Dumper');
 const { postgreSplitterOptions, noSplitSplitterOptions } = require('dbgate-query-splitter/lib/options');
 const { getDatabaseFileLabel, isMemoryDataDir, stripDataDirFile } = require('../shared/dataDir');
-const { EXTENSIONS, extensionFieldName, extensionFieldValues } = require('../shared/extensions');
+const {
+  extensionFieldName,
+  extensionFieldValues,
+  extensionFormLabel,
+  extensionsForForm,
+  postgresEngineLabel,
+} = require('../shared/extensions');
 const pgliteIcon = require('./icon');
 
 /** @type {import('dbgate-types').SqlDialect} */
@@ -93,18 +99,36 @@ const driver = {
 
   showConnectionTab: () => false,
   showConnectionField: field => ['databaseFile'].includes(field),
-  getAdvancedConnectionFields: () =>
-    EXTENSIONS.map(ext => ({
+  getAdvancedConnectionFields: () => {
+    const checkbox = ext => ({
       type: 'checkbox',
       name: extensionFieldName(ext.id),
-      label: ext.label,
+      label: extensionFormLabel(ext),
       default: false,
-    })),
+      testId: extensionFieldName(ext.id),
+    });
+    const { extra, only18, contrib } = extensionsForForm();
+    return [
+      ...extra.map(checkbox),
+      ...contrib.map(checkbox),
+      {
+        type: 'select',
+        name: '_pgliteExtPostgres18',
+        label: `${postgresEngineLabel(18)} only`,
+        disabled: true,
+        default: 'note',
+        testId: 'pgliteExtPostgres18',
+        options: [{ name: `Not available on ${postgresEngineLabel(17)} data directories`, value: 'note' }],
+      },
+      ...only18.map(checkbox),
+    ];
+  },
   beforeConnectionSave: connection => {
     const databaseFile = stripDataDirFile(connection.databaseFile);
     const isMemory = isMemoryDataDir(databaseFile);
+    const { _pgliteExtPostgres18, ...rest } = connection;
     return {
-      ...connection,
+      ...rest,
       ...extensionFieldValues(connection),
       databaseFile,
       singleDatabase: isMemory,

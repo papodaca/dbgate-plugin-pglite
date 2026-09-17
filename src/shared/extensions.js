@@ -2,11 +2,11 @@ const EXTENSIONS = [
   { id: 'vector', label: 'pgvector', sqlName: 'vector' },
   { id: 'pg_textsearch', label: 'pg_textsearch', sqlName: 'pg_textsearch' },
   { id: 'age', label: 'Apache AGE', sqlName: 'age' },
-  { id: 'icu', label: 'ICU locales (full)', sqlName: null },
+  { id: 'icu', label: 'ICU locales (full)', sqlName: null, onlyMajor: 18 },
   { id: 'pg_hashids', label: 'pg_hashids', sqlName: 'pg_hashids' },
   { id: 'pg_ivm', label: 'pg_ivm', sqlName: 'pg_ivm' },
   { id: 'pg_uuidv7', label: 'pg_uuidv7', sqlName: 'pg_uuidv7' },
-  { id: 'pgmq', label: 'pgmq', sqlName: 'pgmq' },
+  { id: 'pgmq', label: 'pgmq', sqlName: 'pgmq', onlyMajor: 18 },
   { id: 'pgtap', label: 'pgtap', sqlName: 'pgtap' },
   { id: 'postgis', label: 'PostGIS', sqlName: 'postgis' },
   { id: 'live', label: 'live', sqlName: null },
@@ -27,11 +27,11 @@ const EXTENSIONS = [
   { id: 'isn', label: 'isn', sqlName: 'isn' },
   { id: 'lo', label: 'lo', sqlName: 'lo' },
   { id: 'ltree', label: 'ltree', sqlName: 'ltree' },
-  { id: 'moddatetime', label: 'moddatetime', sqlName: 'moddatetime' },
+  { id: 'moddatetime', label: 'moddatetime', sqlName: 'moddatetime', onlyMajor: 18 },
   { id: 'pageinspect', label: 'pageinspect', sqlName: 'pageinspect' },
   { id: 'pg_buffercache', label: 'pg_buffercache', sqlName: 'pg_buffercache' },
   { id: 'pg_freespacemap', label: 'pg_freespacemap', sqlName: 'pg_freespacemap' },
-  { id: 'pg_stat_statements', label: 'pg_stat_statements', sqlName: 'pg_stat_statements' },
+  { id: 'pg_stat_statements', label: 'pg_stat_statements', sqlName: 'pg_stat_statements', onlyMajor: 18 },
   { id: 'pg_surgery', label: 'pg_surgery', sqlName: 'pg_surgery' },
   { id: 'pg_trgm', label: 'pg_trgm', sqlName: 'pg_trgm' },
   { id: 'pg_visibility', label: 'pg_visibility', sqlName: 'pg_visibility' },
@@ -48,6 +48,44 @@ const EXTENSIONS = [
 
 function extensionFieldName(id) {
   return `pgliteExt_${id}`;
+}
+
+const PGLITE_VERSION_BY_MAJOR = {
+  17: '0.4.6',
+  18: '0.5.8',
+};
+
+function postgresEngineLabel(major) {
+  const pglite = PGLITE_VERSION_BY_MAJOR[major];
+  return pglite ? `Postgres ${major} / PGlite ${pglite}` : `Postgres ${major}`;
+}
+
+function extensionFormLabel(ext) {
+  return ext.onlyMajor ? `${ext.label} (${postgresEngineLabel(ext.onlyMajor)})` : ext.label;
+}
+
+const EXTRA_IDS = new Set([
+  'vector',
+  'pg_textsearch',
+  'age',
+  'pg_hashids',
+  'pg_ivm',
+  'pg_uuidv7',
+  'pgtap',
+  'postgis',
+  'live',
+]);
+
+function extensionsForForm() {
+  const extra = [];
+  const only18 = [];
+  const contrib = [];
+  for (const ext of EXTENSIONS) {
+    if (ext.onlyMajor === 18) only18.push(ext);
+    else if (EXTRA_IDS.has(ext.id)) extra.push(ext);
+    else contrib.push(ext);
+  }
+  return { extra, only18, contrib };
 }
 
 function isEnabled(value) {
@@ -68,7 +106,11 @@ function extensionFieldValues(connection = {}) {
 
 module.exports = {
   EXTENSIONS,
+  PGLITE_VERSION_BY_MAJOR,
   extensionFieldName,
+  postgresEngineLabel,
+  extensionFormLabel,
+  extensionsForForm,
   selectedExtensions,
   extensionFieldValues,
 };

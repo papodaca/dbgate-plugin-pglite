@@ -1601,6 +1601,21 @@ performance-now@^2.1.0:
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
   integrity sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==
 
+"pglite-pg17@npm:@electric-sql/pglite@0.4.6":
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite/-/pglite-0.4.6.tgz#9a0b606e6aaf40a6fdbe323b470dde0f415f18b4"
+  integrity sha512-qmlmfN8UyKCee35qkV0r/MBp+Znl8FjBz7OpoglNvww3GJpw0/DLP0o1ZymvLNmcD5DTLOQdzKPtF8Hd3mdl1w==
+
+"pglite-postgis-pg17@npm:@electric-sql/pglite-postgis@0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-postgis/-/pglite-postgis-0.0.8.tgz#bb2a5538ad466adf5dd72b127727b6b4a34bb89d"
+  integrity sha512-ShtsBFpxb5JDTCbMSpEAcAHIwFmxrXsQi7fKVeLWd8e7seTlSeBcjt3itpFDFXCqhIcb5EKEfZCgVJH3d3E1Lg==
+
+"pglite-tools-pg17@npm:@electric-sql/pglite-tools@0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-tools/-/pglite-tools-0.3.6.tgz#bcbe08ae36f80c5d365bb3605108fd9bb138f5e8"
+  integrity sha512-m0JcJB4gOlZHMKGXthMQYnA+VqJE0c0tZyFfN1B7HTgZXAtP/aqmrSmoKlmC5939Ek35npir52k728B+zfUpuw==
+
 picocolors@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.1.tgz#3d321af3eab939b083c8f929a1d12cda81c26b6b"
