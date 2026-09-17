@@ -7,15 +7,55 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
+"@electric-sql/pglite-age@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-age/-/pglite-age-0.0.9.tgz#27ca8f6fff93ee190eeb793dd50ecbb8a6ec2f8f"
+  integrity sha512-IdNy5P5nxwKVeSPLjDLXkp/eYffH5roympM7fTG+g9ehzBrDnQ9TT2tfCJ2vRVcOSPQBp4oURzfRE19cs/x8ZA==
+
+"@electric-sql/pglite-icu-full@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-icu-full/-/pglite-icu-full-0.1.0.tgz#a27eee1c2d2ed63b9c129bd0ef0baaa1892a987d"
+  integrity sha512-yZ0diEYEk2JKaQJ1UX27yMIeVL5J5TX4lWJ8LqLZOBD+BD8NcQt8XGeJfpvr+y+BcHIcsxc85Ud1cesHapOBJA==
+
+"@electric-sql/pglite-pg_hashids@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pg_hashids/-/pglite-pg_hashids-0.0.9.tgz#956bf5d19bb4dbca79bc96e023c158fb5fd87ab5"
+  integrity sha512-NffsZH+FaRLp0WzsYG35BW/wOHLsTs325zjgp+PnKlWeGyW523Mbw4EZ1Awm02C3QWBU9p8Y2Fk02Al5NpRGUg==
+
+"@electric-sql/pglite-pg_ivm@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pg_ivm/-/pglite-pg_ivm-0.0.9.tgz#ab189bb79528ef3aa8733635c732e43be0ea3cc7"
+  integrity sha512-mbTcDLQyzeOG4rX6LLHhWDPJeQUv2xHvayKtf4oE7xujWEGWEDUEJP1+U0pXXELtIoWiUzzPBWjzKY1mRisqkQ==
+
 "@electric-sql/pglite-pg_textsearch@0.0.10":
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pg_textsearch/-/pglite-pg_textsearch-0.0.10.tgz#ec214c7dc2cc9639a0a6ccfbac8e34175078bd40"
   integrity sha512-tsL1rTYU4tzIC44htL7/0nS6C2XC5Srz0tfxU1LJelCqNIBkpFI9Esw1JbuVCaQKUHGDbPgAz8JYavNxwbuRVw==
 
+"@electric-sql/pglite-pg_uuidv7@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pg_uuidv7/-/pglite-pg_uuidv7-0.0.9.tgz#687815c657691e0a24f237e01ff6450e4f566a66"
+  integrity sha512-n/JbzoQMF9jFKFxGLRIzUfC1O4V2vTE0Pt3uoAO6/EP7dX5m1h4zBdezQAcT2JFostD0YWUdzHj9iYvcbUGM1A==
+
+"@electric-sql/pglite-pgmq@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pgmq/-/pglite-pgmq-0.0.6.tgz#3c080e487528f188bcc0202d47787d912426193e"
+  integrity sha512-KSkXos6Ac1u6Sxd7fJ4Ys8FKd+noLffB5tfVEauw51+lmOTUauZk7CjZS8oDfeMHZULBK23MvhQw3pzO44TMGg==
+
+"@electric-sql/pglite-pgtap@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pgtap/-/pglite-pgtap-0.0.9.tgz#219d8f3c2172822fffe0adac1db7b16d84b795f4"
+  integrity sha512-VIyclfOawUN0IJROKiCnrVxsZQEG7tixgiC8c8nxp9TlBhI79MZqotoqlqvdPzGHmjWZlcgJ7tC8InOcy+2A/A==
+
 "@electric-sql/pglite-pgvector@0.0.9":
   version "0.0.9"
   resolved "https://registry.yarnpkg.com/@electric-sql/pglite-pgvector/-/pglite-pgvector-0.0.9.tgz#aa8dbc400517b2c09a58a6b216f0ce413430213b"
   integrity sha512-ue4iBW651gDQwBwn97Ekv1lYGPvXa1ymHbRbTCSL0Ib286PRDD1VDOwzwEoekZuO/wctMbTzKzlwdgDwYrqZ8A==
+
+"@electric-sql/pglite-postgis@^0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite-postgis/-/pglite-postgis-0.2.8.tgz#0f41fafcdcd3b739e595ca7eb5ef8b5f1260446c"
+  integrity sha512-B7XVSVuj+9TEVfIgPSlbWbhKvROENHTp0Ex6A44kTeTqy4FAm31uGsi7fxx7gqN0Mdo5qH1xv5Fu42dHwKZpqg==
 
 "@electric-sql/pglite@0.5.8":
   version "0.5.8"

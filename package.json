@@ -3,7 +3,7 @@
   "main": "dist/backend.js",
   "version": "0.1.0",
   "license": "MIT",
-  "description": "PGlite connector plugin for DbGate",
+  "description": "PGlite connector plugin for DbGate ![pglite icon](https://raw.githubusercontent.com/electric-sql/pglite/refs/heads/main/docs/public/img/brand/icon-light.svg)",
   "keywords": [
     "dbgate",
     "dbgateplugin",
@@ -26,8 +26,16 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-age": "^0.0.9",
+    "@electric-sql/pglite-icu-full": "^0.1.0",
+    "@electric-sql/pglite-pg_hashids": "^0.0.9",
+    "@electric-sql/pglite-pg_ivm": "^0.0.9",
     "@electric-sql/pglite-pg_textsearch": "0.0.10",
+    "@electric-sql/pglite-pg_uuidv7": "^0.0.9",
+    "@electric-sql/pglite-pgmq": "^0.0.6",
+    "@electric-sql/pglite-pgtap": "^0.0.9",
     "@electric-sql/pglite-pgvector": "0.0.9",
+    "@electric-sql/pglite-postgis": "^0.2.8",
     "dbgate-query-splitter": "^4.12.0",
     "dbgate-tools": "^6.5.0"
   },

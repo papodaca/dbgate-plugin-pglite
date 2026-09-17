@@ -14,7 +14,19 @@ function copyDir(src, dest) {
   }
 }
 
-const packages = ['pglite', 'pglite-pgvector', 'pglite-pg_textsearch'];
+const packages = [
+  'pglite',
+  'pglite-age',
+  'pglite-icu-full',
+  'pglite-pg_hashids',
+  'pglite-pg_ivm',
+  'pglite-pg_textsearch',
+  'pglite-pg_uuidv7',
+  'pglite-pgmq',
+  'pglite-pgtap',
+  'pglite-pgvector',
+  'pglite-postgis',
+];
 
 for (const name of packages) {
   const src = path.join(__dirname, '..', 'node_modules', '@electric-sql', name);

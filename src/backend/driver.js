@@ -54,6 +54,9 @@ const driver = {
     const options = {
       extensions: loadExtensionMap(selected),
     };
+    if (selected.some(ext => ext.id === 'icu')) {
+      options.icuDataDir = await require('@electric-sql/pglite-icu-full').icuDataDir();
+    }
 
     try {
       const client = dataDir ? await PGlite.create(dataDir, options) : await PGlite.create(options);

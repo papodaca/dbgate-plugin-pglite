@@ -4,6 +4,20 @@ function loadExtensionModule(id) {
       return require('@electric-sql/pglite-pgvector').vector;
     case 'pg_textsearch':
       return require('@electric-sql/pglite-pg_textsearch').pg_textsearch;
+    case 'age':
+      return require('@electric-sql/pglite-age').age;
+    case 'pg_hashids':
+      return require('@electric-sql/pglite-pg_hashids').pg_hashids;
+    case 'pg_ivm':
+      return require('@electric-sql/pglite-pg_ivm').pg_ivm;
+    case 'pg_uuidv7':
+      return require('@electric-sql/pglite-pg_uuidv7').pg_uuidv7;
+    case 'pgmq':
+      return require('@electric-sql/pglite-pgmq').pgmq;
+    case 'pgtap':
+      return require('@electric-sql/pglite-pgtap').pgtap;
+    case 'postgis':
+      return require('@electric-sql/pglite-postgis').postgis;
     case 'live':
       return require('@electric-sql/pglite/live').live;
     case 'amcheck':
@@ -82,6 +96,7 @@ function loadExtensionModule(id) {
 function loadExtensionMap(selected) {
   const extensions = {};
   for (const ext of selected) {
+    if (ext.id === 'icu') continue;
     extensions[ext.id] = loadExtensionModule(ext.id);
   }
   return extensions;
