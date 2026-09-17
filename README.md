@@ -2,9 +2,9 @@
 
 DbGate driver for [PGlite](https://pglite.dev/), the WASM Postgres that lives in a directory (or in memory). No server to start.
 
-Create a connection and pick `runtime.txt` (or any file in the data dir). The driver drops that filename and, if a `pgdata` folder is sitting next to it, opens that. That is the Hideout layout. Leave the path empty or set it to `memory://` for an in-memory database.
+Create a connection and point it at a PGlite data directory. The Browse button only opens files, so pick something inside the dir (`PG_VERSION`, `runtime.txt`) or type the path. The driver drops those filenames and uses the directory. If that folder is only a wrapper and the cluster is in `pgdata/`, that is what gets opened. Leave the path empty or set it to `memory://` for an in-memory database.
 
-The plugin ships PGlite 0.5.8 with `vector` and `pg_textsearch`, same as Hideout.
+Extensions are checkboxes on the connection Advanced tab. Only checked ones are loaded.
 
 ## Develop
 

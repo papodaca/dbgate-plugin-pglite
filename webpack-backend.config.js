@@ -14,11 +14,25 @@ var config = {
   },
 
   // yarn pack drops any folder named node_modules. Ship PGlite next to backend.js instead.
-  externals: {
-    '@electric-sql/pglite': 'commonjs ./vendor/pglite',
-    '@electric-sql/pglite-pgvector': 'commonjs ./vendor/pglite-pgvector',
-    '@electric-sql/pglite-pg_textsearch': 'commonjs ./vendor/pglite-pg_textsearch',
-  },
+  externals: [
+    function ({ request }, callback) {
+      if (!request) return callback();
+      if (request === '@electric-sql/pglite') {
+        return callback(null, 'commonjs ./vendor/pglite');
+      }
+      if (request.startsWith('@electric-sql/pglite/contrib/')) {
+        const name = request.slice('@electric-sql/pglite/contrib/'.length);
+        return callback(null, `commonjs ./vendor/pglite/dist/contrib/${name}.cjs`);
+      }
+      if (request === '@electric-sql/pglite/live') {
+        return callback(null, 'commonjs ./vendor/pglite/dist/live/index.cjs');
+      }
+      if (request.startsWith('@electric-sql/pglite-')) {
+        return callback(null, 'commonjs ./vendor/' + request.slice('@electric-sql/'.length));
+      }
+      callback();
+    },
+  ],
 };
 
 module.exports = config;

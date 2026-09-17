@@ -103,7 +103,16 @@ class Analyser extends DatabaseAnalyser {
       columns: columns.filter(col => col.pureName == view.pureName && col.schemaName == view.schemaName),
     }));
 
+    const schemaNames = new Set();
+    for (const table of tables) {
+      if (table.schemaName) schemaNames.add(table.schemaName);
+    }
+    for (const view of views) {
+      if (view.schemaName) schemaNames.add(view.schemaName);
+    }
+
     return {
+      schemas: [...schemaNames].sort().map(schemaName => ({ schemaName })),
       tables,
       views,
     };

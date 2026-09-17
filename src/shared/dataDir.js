@@ -1,5 +1,6 @@
 const DATA_DIR_FILES = ['runtime.txt', 'PG_VERSION', 'postgresql.conf', 'pg_hba.conf', 'postmaster.pid'];
 
+
 function stripDataDirFile(databaseFile) {
   if (!databaseFile) return databaseFile;
   const normalized = databaseFile.replace(/[/\\]+$/, '');

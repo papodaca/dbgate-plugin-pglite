@@ -5,6 +5,12 @@ const { createBulkInsertStreamBase } = require('dbgate-tools');
 const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
 const { stripDataDirFile } = require('../shared/dataDir');
+const { selectedExtensions } = require('../shared/extensions');
+const { loadExtensionMap } = require('./loadExtensions');
+
+function isPostgresDataDir(dir) {
+  return fs.existsSync(path.join(dir, 'PG_VERSION')) && fs.existsSync(path.join(dir, 'base'));
+}
 
 function resolveDataDir(databaseFile) {
   if (!databaseFile || databaseFile === 'memory' || databaseFile === 'memory://') {
@@ -19,12 +25,12 @@ function resolveDataDir(databaseFile) {
       dir = path.dirname(dir);
     }
   } catch {
-    // Path does not exist yet. PGlite creates the directory.
+    return dir;
   }
 
-  const nestedPgdata = path.join(dir, 'pgdata');
-  if (fs.existsSync(path.join(nestedPgdata, 'PG_VERSION'))) {
-    return nestedPgdata;
+  const nested = path.join(dir, 'pgdata');
+  if (isPostgresDataDir(nested)) {
+    return nested;
   }
 
   return dir;
@@ -41,17 +47,20 @@ const driver = {
   ...driverBase,
   analyserClass: Analyser,
 
-  async connect({ databaseFile }) {
+  async connect(connection) {
     const { PGlite } = require('@electric-sql/pglite');
-    const { vector } = require('@electric-sql/pglite-pgvector');
-    const { pg_textsearch } = require('@electric-sql/pglite-pg_textsearch');
-    const dataDir = resolveDataDir(databaseFile);
+    const dataDir = resolveDataDir(connection.databaseFile);
+    const selected = selectedExtensions(connection);
     const options = {
-      extensions: { vector, pg_textsearch },
+      extensions: loadExtensionMap(selected),
     };
 
     try {
       const client = dataDir ? await PGlite.create(dataDir, options) : await PGlite.create(options);
+      for (const ext of selected) {
+        if (!ext.sqlName) continue;
+        await client.exec(`CREATE EXTENSION IF NOT EXISTS "${ext.sqlName}"`);
+      }
       return { client };
     } catch (error) {
       const hint = dataDir ? ` (${dataDir})` : '';

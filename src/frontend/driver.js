@@ -2,6 +2,7 @@ const { driverBase } = (global.DBGATE_PACKAGES && global.DBGATE_PACKAGES['dbgate
 const Dumper = require('./Dumper');
 const { postgreSplitterOptions, noSplitSplitterOptions } = require('dbgate-query-splitter/lib/options');
 const { getDatabaseFileLabel, stripDataDirFile } = require('../shared/dataDir');
+const { EXTENSIONS, extensionFieldName, extensionFieldValues } = require('../shared/extensions');
 
 /** @type {import('dbgate-types').SqlDialect} */
 const dialect = {
@@ -85,10 +86,18 @@ const driver = {
 
   showConnectionTab: () => false,
   showConnectionField: field => ['databaseFile'].includes(field),
+  getAdvancedConnectionFields: () =>
+    EXTENSIONS.map(ext => ({
+      type: 'checkbox',
+      name: extensionFieldName(ext.id),
+      label: ext.label,
+      default: false,
+    })),
   beforeConnectionSave: connection => {
     const databaseFile = stripDataDirFile(connection.databaseFile);
     return {
       ...connection,
+      ...extensionFieldValues(connection),
       databaseFile,
       singleDatabase: true,
       defaultDatabase: getDatabaseFileLabel(databaseFile),
